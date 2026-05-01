@@ -1,1 +1,65 @@
-# pcc26
+# Quacky: Simple and open social media for teens
+
+**This is a source only mirror of the Quacky source code submitted for Premier's Coding Competition 2026, and serves as a code archive. No further changes will be made to this repo.**
+
+## Self host
+
+```yml
+services:
+  quacky:
+    container_name: quacky
+    image: qky/qky:latest
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - cdn
+    networks:
+      - quacky_network
+    ports:
+      - "3001:3001"
+
+  db:
+    container_name: quackydb
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: quacky
+      POSTGRES_PASSWORD: quacky
+      POSTGRES_DB: quackydb
+    volumes:
+      - quacky_db_data:/var/lib/postgresql/data
+    networks:
+      - quacky_network
+    ports:
+      - "15432:5432"
+
+  cdn:
+    image: rustfs/rustfs:latest
+    container_name: quackycdn
+    restart: always
+    environment:
+      - RUSTFS_ACCESS_KEY=quacky
+      - RUSTFS_SECRET_KEY=quacky
+    volumes:
+      - quacky_cdn_data:/data:rw
+    command: server --address :9000 --console-address :9001 /data
+    networks:
+      - quacky_network
+    ports:
+      - "6000:9000"
+      - "6001:9001"
+    depends_on:
+      - db
+
+networks:
+  quacky_network:
+    driver: bridge
+
+volumes:
+  quacky_db_data:
+    driver: local
+  quacky_cdn_data:
+    driver: local
+```
